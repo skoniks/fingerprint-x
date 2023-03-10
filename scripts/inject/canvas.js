@@ -49,6 +49,7 @@ const getShift = (mode) => {
 export const canvasArgs = () => [config.active, config.shift];
 
 export const canvasInject = (active, shift) => {
+  console.log('inject', active, shift);
   if (!active) return;
   if (!shift) {
     shift = {
@@ -58,8 +59,13 @@ export const canvasInject = (active, shift) => {
       a: Math.floor(Math.random() * 10) - 5,
     };
   }
+  if (Object.values(shift) == [0, 0, 0, 0]) {
+    shift.r++;
+    shift.g--;
+  }
   const { getImageData } = CanvasRenderingContext2D.prototype;
   const noisifyCanvas = (canvas, context) => {
+    console.log('noisifyCanvas');
     if (context) {
       const width = canvas.width;
       const height = canvas.height;
@@ -79,6 +85,7 @@ export const canvasInject = (active, shift) => {
     }
   };
   const updateIframes = () => {
+    console.log('updateIframes');
     for (const iframe of window.top.document.querySelectorAll('iframe')) {
       if (iframe.contentWindow) {
         if (iframe.contentWindow.CanvasRenderingContext2D) {
