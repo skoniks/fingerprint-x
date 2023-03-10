@@ -1,0 +1,25 @@
+{
+  "name": "Fingerprint X",
+  "description": "",
+  "version": "0.0.0.1",
+  "icons": {
+    "16": "images/icon_16.png",
+    "32": "images/icon_32.png",
+    "48": "images/icon_48.png",
+    "128": "images/icon_128.png"
+  },
+
+  "action": {
+    "default_popup": "popup.html"
+  },
+
+  "background": {
+    "service_worker": "scripts/service.js",
+    "type": "module"
+  },
+
+  "manifest_version": 3,
+  "minimum_chrome_version": "102",
+  "permissions": ["storage", "scripting", "webNavigation"],
+  "host_permissions": ["<all_urls>"]
+}

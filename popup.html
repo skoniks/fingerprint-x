@@ -1,0 +1,107 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles/popup.css" />
+  </head>
+  <body>
+    <div class="header">
+      <span class="title">
+        <i class="icon fingerprint"></i>
+        <span>Fingerprint X</span>
+      </span>
+      <a id="theme">
+        <i class="icon lightbulb"></i>
+      </a>
+    </div>
+    <div class="settings">
+      <div>
+        <label>
+          <input type="checkbox" id="canvas" />
+          <span>Canvas</span>
+          <i class="icon check"></i>
+        </label>
+        <div>
+          <button id="canvas_fresh">
+            <i class="icon sync"></i>
+          </button>
+          <select id="canvas_mode">
+            <option value="random">always new</option>
+            <option value="session">per session</option>
+            <option value="fixed">persistent</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" id="webgl" />
+          <span>WebGL</span>
+          <i class="icon check"></i>
+        </label>
+        <div>
+          <button id="webgl_fresh">
+            <i class="icon sync"></i>
+          </button>
+          <select id="webgl_mode">
+            <option value="random">always new</option>
+            <option value="session">per session</option>
+            <option value="fixed">persistent</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" id="audio" />
+          <span>Audio</span>
+          <i class="icon check"></i>
+        </label>
+        <div>
+          <button id="audio_fresh">
+            <i class="icon sync"></i>
+          </button>
+          <select id="audio_mode">
+            <option value="random">always new</option>
+            <option value="session">per session</option>
+            <option value="fixed">persistent</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" id="rects" />
+          <span>Rects</span>
+          <i class="icon check"></i>
+        </label>
+        <div>
+          <button id="rects_fresh">
+            <i class="icon sync"></i>
+          </button>
+          <select id="rects_mode">
+            <option value="random">always new</option>
+            <option value="session">per session</option>
+            <option value="fixed">persistent</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" id="font" />
+          <span>Font</span>
+          <i class="icon check"></i>
+        </label>
+        <div>
+          <button id="font_fresh">
+            <i class="icon sync"></i>
+          </button>
+          <select id="font_mode">
+            <option value="random">always new</option>
+            <option value="session">per session</option>
+            <option value="fixed">persistent</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <script src="scripts/popup.js"></script>
+  </body>
+</html>

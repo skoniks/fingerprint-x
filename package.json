@@ -1,0 +1,11 @@
+{
+  "type": "module",
+  "scripts": {
+    "scss": "sass styles --no-source-map",
+    "watch": "sass styles --watch --no-source-map"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.220",
+    "sass": "^1.58.3"
+  }
+}
