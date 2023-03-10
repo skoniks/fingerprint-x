@@ -59,9 +59,8 @@ export const canvasInject = (active, shift) => {
       a: Math.floor(Math.random() * 10) - 5,
     };
   }
-  if (Object.values(shift) == [0, 0, 0, 0]) {
-    shift.r++;
-    shift.g--;
+  if (!Object.values(shift).reduce((i, j) => i + Math.abs(j), 0)) {
+    shift.r = (shift.g = (shift.b = (shift.a = 1) + 1) + 1) + 1;
   }
   const { getImageData } = CanvasRenderingContext2D.prototype;
   const noisifyCanvas = (canvas, context) => {
