@@ -49,6 +49,14 @@ i.icon {
   display: inline-block;
   background: var(--color-text);
 }
+i.icon.bell {
+  -webkit-mask: url(../icons/bell.svg) no-repeat center;
+  mask: url(../icons/bell.svg) no-repeat center;
+}
+i.icon.belloff {
+  -webkit-mask: url(../icons/belloff.svg) no-repeat center;
+  mask: url(../icons/belloff.svg) no-repeat center;
+}
 i.icon.check {
   -webkit-mask: url(../icons/check.svg) no-repeat center;
   mask: url(../icons/check.svg) no-repeat center;
@@ -151,20 +159,27 @@ button > i.icon {
   font-size: 18px;
   background: var(--color-background-sec);
 }
-.header .title {
+.header span {
   display: flex;
   align-items: center;
   gap: 5px;
 }
-.header .title > i.icon {
+.header span.title i.icon {
   font-size: 22px;
 }
-.header a {
+.header span a {
   cursor: pointer;
   padding: 2px;
 }
-.header a > i.icon {
+.header span a.hide {
+  display: none;
+}
+.header span a i.icon {
   background: var(--color-text-sec);
+}
+.header span a i.icon.belloff {
+  font-size: 22px;
+  margin: -2px;
 }
 
 .settings {

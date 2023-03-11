@@ -52,7 +52,6 @@ export const canvasArgs = () => {
 
 export const canvasInject = (id, active, shift) => {
   console.log('canvasInject', id, active, shift);
-  console.log();
   if (!active) return;
   if (!shift) {
     shift = {

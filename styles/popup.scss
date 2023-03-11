@@ -58,6 +58,8 @@ i.icon {
     }
   }
 
+  @include icon(bell);
+  @include icon(belloff);
   @include icon(check);
   @include icon(fingerprint);
   @include icon(fingerprint2);
@@ -163,22 +165,31 @@ button {
   font-size: 18px;
   background: var(--color-background-sec);
 
-  .title {
+  span {
     display: flex;
     align-items: center;
     gap: 5px;
 
-    > i.icon {
+    &.title i.icon {
       font-size: 22px;
     }
-  }
 
-  a {
-    cursor: pointer;
-    padding: 2px;
+    a {
+      cursor: pointer;
+      padding: 2px;
 
-    > i.icon {
-      background: var(--color-text-sec);
+      &.hide {
+        display: none;
+      }
+
+      i.icon {
+        background: var(--color-text-sec);
+      }
+
+      i.icon.belloff {
+        font-size: 22px;
+        margin: -2px;
+      }
     }
   }
 }

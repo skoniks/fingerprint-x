@@ -14,6 +14,8 @@ const audioFresh = document.getElementById('audio_fresh');
 const rectsFresh = document.getElementById('rects_fresh');
 const fontFresh = document.getElementById('font_fresh');
 const theme = document.getElementById('theme');
+const notifyoff = document.getElementById('notifyoff');
+const notifyon = document.getElementById('notifyon');
 
 chrome.storage.local.get().then((result) => {
   canvas.checked = result.canvas ?? true;
@@ -27,6 +29,13 @@ chrome.storage.local.get().then((result) => {
   rectsMode.value = result.rectsMode ?? 'random';
   fontMode.value = result.fontMode ?? 'random';
   document.body.parentElement.dataset.theme = result.theme ?? false;
+  if (result.notify ?? true) {
+    notifyon.className = 'hide';
+    notifyoff.className = '';
+  } else {
+    notifyon.className = '';
+    notifyoff.className = 'hide';
+  }
 });
 
 canvas.addEventListener('change', function () {
@@ -86,4 +95,16 @@ theme.addEventListener('click', function () {
   const theme = !(document.body.parentElement.dataset.theme == 'true');
   document.body.parentElement.dataset.theme = theme;
   chrome.storage.local.set({ theme });
+});
+
+notifyon.addEventListener('click', function () {
+  notifyon.className = 'hide';
+  notifyoff.className = '';
+  chrome.storage.local.set({ notify: true });
+});
+
+notifyoff.addEventListener('click', function () {
+  notifyon.className = '';
+  notifyoff.className = 'hide';
+  chrome.storage.local.set({ notify: false });
 });
