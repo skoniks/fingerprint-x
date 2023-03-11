@@ -46,10 +46,13 @@ const getShift = (mode) => {
   }
 };
 
-export const canvasArgs = () => [config.active, config.shift];
+export const canvasArgs = () => {
+  return [chrome.runtime.id, config.active, config.shift];
+};
 
-export const canvasInject = (active, shift) => {
-  console.log('inject', active, shift);
+export const canvasInject = (id, active, shift) => {
+  console.log('canvasInject', id, active, shift);
+  console.log();
   if (!active) return;
   if (!shift) {
     shift = {
@@ -63,8 +66,8 @@ export const canvasInject = (active, shift) => {
     shift.r = (shift.g = (shift.b = (shift.a = 1) + 1) + 1) + 1;
   }
   const { getImageData } = CanvasRenderingContext2D.prototype;
-  const noisifyCanvas = (canvas, context) => {
-    console.log('noisifyCanvas');
+  const canvasNoisify = (canvas, context) => {
+    console.log('canvasNoisify');
     if (context) {
       const width = canvas.width;
       const height = canvas.height;
@@ -80,12 +83,17 @@ export const canvasInject = (active, shift) => {
           }
         }
         context.putImageData(imageData, 0, 0);
+        chrome.runtime.sendMessage(id, {
+          action: 'notification',
+          message: 'Canvas fingerprinting detected!',
+          contextMessage: document.location.href,
+        });
       }
     }
   };
-  const updateIframes = () => {
-    console.log('updateIframes');
-    for (const iframe of window.top.document.querySelectorAll('iframe')) {
+  const canvasIframes = () => {
+    console.log('canvasIframes');
+    for (const iframe of document.querySelectorAll('iframe')) {
       if (iframe.contentWindow) {
         if (iframe.contentWindow.CanvasRenderingContext2D) {
           iframe.contentWindow.CanvasRenderingContext2D.prototype.getImageData =
@@ -104,7 +112,7 @@ export const canvasInject = (active, shift) => {
     HTMLCanvasElement.prototype.toBlob,
     {
       apply(target, self, args) {
-        noisifyCanvas(self, self.getContext('2d'));
+        canvasNoisify(self, self.getContext('2d'));
         return Reflect.apply(target, self, args);
       },
     },
@@ -113,7 +121,7 @@ export const canvasInject = (active, shift) => {
     HTMLCanvasElement.prototype.toDataURL,
     {
       apply(target, self, args) {
-        noisifyCanvas(self, self.getContext('2d'));
+        canvasNoisify(self, self.getContext('2d'));
         return Reflect.apply(target, self, args);
       },
     },
@@ -122,13 +130,13 @@ export const canvasInject = (active, shift) => {
     CanvasRenderingContext2D.prototype.getImageData,
     {
       apply(target, self, args) {
-        noisifyCanvas(self.canvas, self);
+        canvasNoisify(self.canvas, self);
         return Reflect.apply(target, self, args);
       },
     },
   );
-  if (document.readyState == 'interactive') updateIframes();
-  else document.addEventListener('DOMContentLoaded', updateIframes);
+  if (document.readyState == 'interactive') canvasIframes();
+  else document.addEventListener('DOMContentLoaded', canvasIframes);
 };
 
 export const canvasConfig = async (active, mode, fresh = false) => {
