@@ -1,66 +1,45 @@
 const config = {
   active: true,
   mode: 'random',
-  shift: null,
+  seed: 0,
 };
 
-const newShift = () => ({
-  r: Math.floor(Math.random() * 10) - 5,
-  g: Math.floor(Math.random() * 10) - 5,
-  b: Math.floor(Math.random() * 10) - 5,
-  a: Math.floor(Math.random() * 10) - 5,
-});
-
-const sessionShift = async () => {
-  if (!config.shift) return newShift();
-  else return config.shift;
-};
-
-const fixedShift = async () => {
-  let { canvasShift } = await chrome.storage.local.get('canvasShift');
-  if (canvasShift === undefined) canvasShift = newShift();
-  await chrome.storage.local.set({ canvasShift });
-  return canvasShift;
-};
-
-const freshShift = async (mode = config.mode) => {
+const getSeed = async (mode) => {
   switch (mode) {
     case 'session':
-      config.shift = null;
-      break;
+      if (!config.seed) return Math.random();
+      else return config.seed;
     case 'fixed':
-      await chrome.storage.local.remove('canvasShift');
-      break;
+      let { canvasSeed } = await chrome.storage.local.get('canvasSeed');
+      if (canvasSeed === undefined) canvasSeed = Math.random();
+      await chrome.storage.local.set({ canvasSeed });
+      return canvasSeed;
+    default:
+      return 0;
   }
+};
+
+const freshSeed = async (mode = config.mode) => {
+  await chrome.storage.local.remove('canvasSeed');
+  config.seed = 0;
   return mode;
 };
 
-const getShift = (mode) => {
-  switch (mode) {
-    case 'session':
-      return sessionShift();
-    case 'fixed':
-      return fixedShift();
-    default:
-      return null;
-  }
-};
-
 const canvasArgs = () => {
-  return [chrome.runtime.id, config.active, config.shift];
+  return [chrome.runtime.id, config.active, config.seed];
 };
 
-const canvasInject = (id, active, shift) => {
-  console.log('canvasInject', id, active, shift);
+const canvasInject = (id, active, seed) => {
+  console.log('canvasInject', id, active, seed);
   if (!active) return;
-  if (!shift) {
-    shift = {
-      r: Math.floor(Math.random() * 10) - 5,
-      g: Math.floor(Math.random() * 10) - 5,
-      b: Math.floor(Math.random() * 10) - 5,
-      a: Math.floor(Math.random() * 10) - 5,
-    };
-  }
+  if (!seed) seed = Math.random();
+  const rand = (index) => Math.abs(seed * (index || rand(1))) % 1;
+  const shift = {
+    r: Math.floor(rand(1) * 10) - 5,
+    g: Math.floor(rand(2) * 10) - 5,
+    b: Math.floor(rand(3) * 10) - 5,
+    a: Math.floor(rand(4) * 10) - 5,
+  };
   if (!Object.values(shift).reduce((i, j) => i + Math.abs(j), 0)) {
     shift.r = (shift.g = (shift.b = (shift.a = 1) + 1) + 1) + 1;
   }
@@ -82,6 +61,7 @@ const canvasInject = (id, active, shift) => {
       context.putImageData(imageData, 0, 0);
       chrome.runtime.sendMessage(id, {
         action: 'notification',
+        id: 'canvas-fingerprint',
         message: 'Canvas fingerprinting detected!',
         contextMessage: document.location.href,
       });
@@ -138,7 +118,7 @@ export const canvasScript = () => {
 };
 
 export const canvasConfig = async (active, mode, fresh = false) => {
-  if (fresh) mode = await freshShift(mode);
-  if (mode) config.shift = await getShift((config.mode = mode));
+  if (fresh) mode = await freshSeed(mode);
+  if (mode) config.seed = await getSeed((config.mode = mode));
   if (active !== undefined) config.active = active;
 };
