@@ -1,7 +1,7 @@
 {
   "name": "Fingerprint X",
   "description": "Defending against browser fingerprinting by reporting a fake value. Spoofing Canvas, WebGL, AudoContex, ClientRects and Font fingerprint.",
-  "version": "0.0.0.9",
+  "version": "0.0.0.10",
   "icons": {
     "16": "images/icon_16.png",
     "32": "images/icon_32.png",
@@ -20,7 +20,7 @@
 
   "content_scripts": [
     {
-      "js": ["scripts/state.js"],
+      "js": ["scripts/state.js", "scripts/freeze.js"],
       "run_at": "document_start",
       "matches": ["<all_urls>"]
     }

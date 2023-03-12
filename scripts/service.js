@@ -74,6 +74,7 @@ const executeScripts = async ({ tabId, frameId, url }) => {
       executeScript(tabId, frameId, rectsScript),
       executeScript(tabId, frameId, fontScript),
     ]);
+    await chrome.tabs.sendMessage(tabId, { action: 'unfreeze' });
   } catch (error) {
     console.log(error);
   }
