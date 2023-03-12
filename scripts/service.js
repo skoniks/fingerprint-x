@@ -1,5 +1,6 @@
 import { canvasConfig, canvasScript } from './inject/canvas.js';
 import { fontConfig, fontScript } from './inject/font.js';
+import { rectsConfig, rectsScript } from './inject/rects.js';
 
 const config = { notify: true, notifies: {} };
 
@@ -10,6 +11,9 @@ const messageHandler = async ({ action, ...data }) => {
       break;
     case 'freshCanvas':
       canvasConfig(undefined, undefined, true);
+      break;
+    case 'freshRects':
+      rectsConfig(undefined, undefined, true);
       break;
     case 'freshFont':
       fontConfig(undefined, undefined, true);
@@ -33,9 +37,10 @@ const notification = ({ id = '', ...params }) => {
       iconUrl: chrome.runtime.getURL('images/icon_128.png'),
       title: chrome.runtime.getManifest().name,
       type: 'basic',
+      silent: true,
       ...params,
     });
-  }, 500);
+  }, 1000);
 };
 
 /**
@@ -66,6 +71,7 @@ const executeScripts = async ({ tabId, frameId, url }) => {
     if (origin == 'null') return;
     await Promise.allSettled([
       executeScript(tabId, frameId, canvasScript),
+      executeScript(tabId, frameId, rectsScript),
       executeScript(tabId, frameId, fontScript),
     ]);
   } catch (error) {
@@ -76,12 +82,14 @@ const executeScripts = async ({ tabId, frameId, url }) => {
 chrome.storage.local.get().then((result) => {
   config.notify = result.notify ?? true;
   canvasConfig(result.canvas, result.canvasMode);
+  rectsConfig(result.rects, result.rectsMode);
   fontConfig(result.font, result.fontMode);
 });
 
 chrome.storage.onChanged.addListener((result) => {
   if (result.notify) config.notify = result.notify.newValue;
   canvasConfig(result.canvas?.newValue, result.canvasMode?.newValue);
+  rectsConfig(result.rects?.newValue, result.rectsMode?.newValue);
   fontConfig(result.font?.newValue, result.fontMode?.newValue);
 });
 

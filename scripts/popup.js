@@ -75,14 +75,17 @@ canvasFresh.addEventListener('click', function () {
   this.className = 'spin';
 });
 webglFresh.addEventListener('click', function () {
+  chrome.runtime.sendMessage({ action: 'freshWebgl' });
   setTimeout(() => (this.className = ''), 500);
   this.className = 'spin';
 });
 audioFresh.addEventListener('click', function () {
+  chrome.runtime.sendMessage({ action: 'freshAudio' });
   setTimeout(() => (this.className = ''), 500);
   this.className = 'spin';
 });
 rectsFresh.addEventListener('click', function () {
+  chrome.runtime.sendMessage({ action: 'freshRects' });
   setTimeout(() => (this.className = ''), 500);
   this.className = 'spin';
 });
@@ -97,13 +100,11 @@ theme.addEventListener('click', function () {
   document.body.parentElement.dataset.theme = theme;
   chrome.storage.local.set({ theme });
 });
-
 notifyon.addEventListener('click', function () {
   notifyon.className = 'hide';
   notifyoff.className = '';
   chrome.storage.local.set({ notify: true });
 });
-
 notifyoff.addEventListener('click', function () {
   notifyon.className = '';
   notifyoff.className = 'hide';
