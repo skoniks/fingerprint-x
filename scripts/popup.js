@@ -87,6 +87,7 @@ rectsFresh.addEventListener('click', function () {
   this.className = 'spin';
 });
 fontFresh.addEventListener('click', function () {
+  chrome.runtime.sendMessage({ action: 'freshFont' });
   setTimeout(() => (this.className = ''), 500);
   this.className = 'spin';
 });
