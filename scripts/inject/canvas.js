@@ -46,11 +46,11 @@ const getShift = (mode) => {
   }
 };
 
-export const canvasArgs = () => {
+const canvasArgs = () => {
   return [chrome.runtime.id, config.active, config.shift];
 };
 
-export const canvasInject = (id, active, shift) => {
+const canvasInject = (id, active, shift) => {
   console.log('canvasInject', id, active, shift);
   if (!active) return;
   if (!shift) {
@@ -67,75 +67,74 @@ export const canvasInject = (id, active, shift) => {
   const { getImageData } = CanvasRenderingContext2D.prototype;
   const canvasNoisify = (canvas, context) => {
     console.log('canvasNoisify');
-    if (context) {
-      const width = canvas.width;
-      const height = canvas.height;
-      if (width && height) {
-        const imageData = getImageData.apply(context, [0, 0, width, height]);
-        for (let i = 0; i < height; i++) {
-          for (let j = 0; j < width; j++) {
-            const n = i * (width * 4) + j * 4;
-            imageData.data[n + 0] += shift.r;
-            imageData.data[n + 1] += shift.g;
-            imageData.data[n + 2] += shift.b;
-            imageData.data[n + 3] += shift.a;
-          }
+    const { width, height } = canvas;
+    if (context && width && height) {
+      const imageData = getImageData.apply(context, [0, 0, width, height]);
+      for (let i = 0; i < height; i++) {
+        for (let j = 0; j < width; j++) {
+          const n = i * (width * 4) + j * 4;
+          imageData.data[n + 0] += shift.r;
+          imageData.data[n + 1] += shift.g;
+          imageData.data[n + 2] += shift.b;
+          imageData.data[n + 3] += shift.a;
         }
-        context.putImageData(imageData, 0, 0);
-        chrome.runtime.sendMessage(id, {
-          action: 'notification',
-          message: 'Canvas fingerprinting detected!',
-          contextMessage: document.location.href,
-        });
       }
+      context.putImageData(imageData, 0, 0);
+      chrome.runtime.sendMessage(id, {
+        action: 'notification',
+        message: 'Canvas fingerprinting detected!',
+        contextMessage: document.location.href,
+      });
     }
+  };
+  const canvasDefine = (prototype, key, apply) => {
+    Object.defineProperty(prototype, key, {
+      value: new Proxy(prototype[key], { apply }),
+    });
+  };
+  const canvasHtmlApply = (target, self, args) => {
+    canvasNoisify(self, self.getContext('2d'));
+    return Reflect.apply(target, self, args);
+  };
+  const canvasApply = (target, self, args) => {
+    canvasNoisify(self.canvas, self);
+    return Reflect.apply(target, self, args);
   };
   const canvasIframes = () => {
     console.log('canvasIframes');
     for (const iframe of document.querySelectorAll('iframe')) {
       if (iframe.contentWindow) {
         if (iframe.contentWindow.CanvasRenderingContext2D) {
-          iframe.contentWindow.CanvasRenderingContext2D.prototype.getImageData =
-            CanvasRenderingContext2D.prototype.getImageData;
+          canvasDefine(
+            iframe.contentWindow.CanvasRenderingContext2D.prototype,
+            'getImageData',
+            canvasApply,
+          );
         }
         if (iframe.contentWindow.HTMLCanvasElement) {
-          iframe.contentWindow.HTMLCanvasElement.prototype.toBlob =
-            HTMLCanvasElement.prototype.toBlob;
-          iframe.contentWindow.HTMLCanvasElement.prototype.toDataURL =
-            HTMLCanvasElement.prototype.toDataURL;
+          canvasDefine(
+            iframe.contentWindow.HTMLCanvasElement.prototype,
+            'toBlob',
+            canvasHtmlApply,
+          );
+          canvasDefine(
+            iframe.contentWindow.HTMLCanvasElement.prototype,
+            'toDataURL',
+            canvasHtmlApply,
+          );
         }
       }
     }
   };
-  HTMLCanvasElement.prototype.toBlob = new Proxy(
-    HTMLCanvasElement.prototype.toBlob,
-    {
-      apply(target, self, args) {
-        canvasNoisify(self, self.getContext('2d'));
-        return Reflect.apply(target, self, args);
-      },
-    },
-  );
-  HTMLCanvasElement.prototype.toDataURL = new Proxy(
-    HTMLCanvasElement.prototype.toDataURL,
-    {
-      apply(target, self, args) {
-        canvasNoisify(self, self.getContext('2d'));
-        return Reflect.apply(target, self, args);
-      },
-    },
-  );
-  CanvasRenderingContext2D.prototype.getImageData = new Proxy(
-    CanvasRenderingContext2D.prototype.getImageData,
-    {
-      apply(target, self, args) {
-        canvasNoisify(self.canvas, self);
-        return Reflect.apply(target, self, args);
-      },
-    },
-  );
+  canvasDefine(HTMLCanvasElement.prototype, 'toBlob', canvasHtmlApply);
+  canvasDefine(HTMLCanvasElement.prototype, 'toDataURL', canvasHtmlApply);
+  canvasDefine(CanvasRenderingContext2D.prototype, 'getImageData', canvasApply);
   if (document.readyState == 'interactive') canvasIframes();
   else document.addEventListener('DOMContentLoaded', canvasIframes);
+};
+
+export const canvasScript = () => {
+  return { func: canvasInject, args: canvasArgs() };
 };
 
 export const canvasConfig = async (active, mode, fresh = false) => {

@@ -1,4 +1,4 @@
-import { canvasArgs, canvasConfig, canvasInject } from './inject/canvas.js';
+import { canvasConfig, canvasScript } from './inject/canvas.js';
 
 const config = { notify: true };
 
@@ -13,14 +13,55 @@ const messageHandler = async ({ action, ...data }) => {
   }
 };
 
+/**
+ *
+ * @param {Object} params
+ * @param {string} params.message
+ * @param {string} params.contextMessage
+ * @returns
+ */
 const notification = (params) => {
-  if (!config.notify) return null;
+  if (!config.notify) return;
   return chrome.notifications.create({
     iconUrl: chrome.runtime.getURL('images/icon_128.png'),
     title: chrome.runtime.getManifest().name,
     type: 'basic',
     ...params,
   });
+};
+
+/**
+ *
+ * @param {number} tabId
+ * @param {number} frameId
+ * @param {void} script
+ * @returns
+ */
+const executeScript = (tabId, frameId, script) => {
+  return chrome.scripting.executeScript({
+    target: { tabId, frameIds: [frameId] },
+    injectImmediately: true,
+    world: 'MAIN',
+    ...script(),
+  });
+};
+
+/**
+ *
+ * @param {chrome.webNavigation.WebNavigationTransitionCallbackDetails} params
+ * @returns
+ */
+const executeScripts = async ({ tabId, frameId, url }) => {
+  try {
+    const { origin } = new URL(url);
+    if (origin == 'null') return;
+    await Promise.allSettled([
+      executeScript(tabId, frameId, canvasScript),
+      // executeScript(tabId, frameId, canvasScript),
+    ]);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 chrome.storage.local.get().then((result) => {
@@ -39,17 +80,4 @@ chrome.storage.onChanged.addListener((result) => {
 
 chrome.runtime.onMessage.addListener(messageHandler);
 chrome.runtime.onMessageExternal.addListener(messageHandler);
-
-chrome.webNavigation.onCommitted //
-  .addListener(({ tabId, frameId, url }) => {
-    try {
-      if (!url.startsWith('http')) return;
-      chrome.scripting.executeScript({
-        args: canvasArgs(),
-        func: canvasInject,
-        injectImmediately: true,
-        target: { tabId, frameIds: [frameId] },
-        world: 'MAIN',
-      });
-    } catch {}
-  });
+chrome.webNavigation.onCommitted.addListener(executeScripts);
