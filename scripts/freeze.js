@@ -5,7 +5,7 @@ const freezeScripts = () => {
     window.freezedScripts = [];
     const dispatch = (script, target) => {
       if (script.tagName !== 'SCRIPT') return;
-      if (script.innerHTML === '') return;
+      // if (script.innerHTML === '') return;
       window.freezedScripts.push({ script, target });
       script.remove();
     };
@@ -22,14 +22,16 @@ const freezeScripts = () => {
   }
 };
 
-const preload = `(${freezeScripts.toString()})();`;
-document.documentElement.setAttribute('onreset', preload);
-document.documentElement.dispatchEvent(new CustomEvent('reset'));
-document.documentElement.removeAttribute('onreset');
-
 chrome.runtime.onMessage.addListener(({ action }, sender) => {
   if (sender.id != chrome.runtime.id) return;
   document.dispatchEvent(new CustomEvent(action));
   document.documentElement.dataset.unfreeze = 'true';
   console.log('unfreezing scripts');
 });
+
+try {
+  const preload = `(${freezeScripts.toString()})();`;
+  document.documentElement.setAttribute('onreset', preload);
+  document.documentElement.dispatchEvent(new CustomEvent('reset'));
+  document.documentElement.removeAttribute('onreset');
+} catch (error) {}
