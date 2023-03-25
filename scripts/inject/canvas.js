@@ -44,6 +44,11 @@
     const value = new Proxy(prototype[key], { apply });
     Object.defineProperty(prototype, key, { value });
   };
+  const getContextApply = (target, self, args) => {
+    if (!args[1]) args[1] = {};
+    args[1].willReadFrequently = true;
+    return Reflect.apply(target, self, args);
+  };
   const canvasElementApply = (target, self, args) => {
     canvasNoisify(self, self.getContext('2d'));
     return Reflect.apply(target, self, args);
@@ -56,14 +61,12 @@
     console.log('canvasIframes');
     for (const iframe of document.querySelectorAll('iframe')) {
       if (iframe.contentWindow) {
-        if (iframe.contentWindow.CanvasRenderingContext2D) {
-          definePropertyValue(
-            iframe.contentWindow.CanvasRenderingContext2D.prototype,
-            'getImageData',
-            canvasContextApply,
-          );
-        }
         if (iframe.contentWindow.HTMLCanvasElement) {
+          definePropertyValue(
+            iframe.contentWindow.HTMLCanvasElement.prototype,
+            'getContext',
+            getContextApply,
+          );
           definePropertyValue(
             iframe.contentWindow.HTMLCanvasElement.prototype,
             'toBlob',
@@ -76,8 +79,20 @@
           );
         }
       }
+      if (iframe.contentWindow.CanvasRenderingContext2D) {
+        definePropertyValue(
+          iframe.contentWindow.CanvasRenderingContext2D.prototype,
+          'getImageData',
+          canvasContextApply,
+        );
+      }
     }
   };
+  definePropertyValue(
+    HTMLCanvasElement.prototype,
+    'getContext',
+    getContextApply,
+  );
   definePropertyValue(
     HTMLCanvasElement.prototype,
     'toBlob',
