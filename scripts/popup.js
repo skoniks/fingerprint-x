@@ -53,6 +53,7 @@ rects.addEventListener('change', function () {
 font.addEventListener('change', function () {
   chrome.storage.local.set({ font: this.checked });
 });
+
 canvasMode.addEventListener('change', function () {
   chrome.storage.local.set({ canvasMode: this.value });
 });
