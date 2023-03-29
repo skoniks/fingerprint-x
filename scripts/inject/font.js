@@ -11,23 +11,10 @@
     const index = ++num % 10 ? payload : num;
     return rand(seed, index) > 0.5 ? 1 : -1;
   };
-  const fontHeightApply = (target, self, args) => {
-    const height = Math.floor(self.getBoundingClientRect().height);
-    const result = height ? height + fontNoisify(height) : height;
-    if (result !== height && document.documentElement.dataset.fpxId) {
-      chrome.runtime.sendMessage(document.documentElement.dataset.fpxId, {
-        action: 'notification',
-        id: 'font-fingerprint',
-        message: 'Font fingerprinting detected!',
-        contextMessage: document.location.href,
-      });
-    }
-    return result;
-  };
-  const fontWidthApply = (target, self, args) => {
-    const width = Math.floor(self.getBoundingClientRect().width);
-    const result = width ? width + fontNoisify(width) : width;
-    if (result !== width && document.documentElement.dataset.fpxId) {
+  const fontSizeApply = (target, self, args) => {
+    const size = Reflect.apply(target, self, args);
+    const result = size ? size + fontNoisify(size) : size;
+    if (result !== size && document.documentElement.dataset.fpxId) {
       chrome.runtime.sendMessage(document.documentElement.dataset.fpxId, {
         action: 'notification',
         id: 'font-fingerprint',
@@ -49,19 +36,27 @@
           definePropertyGet(
             iframe.contentWindow.HTMLElement.prototype,
             'offsetHeight',
-            fontHeightApply,
+            fontSizeApply,
           );
           definePropertyGet(
             iframe.contentWindow.HTMLElement.prototype,
             'offsetWidth',
-            fontWidthApply,
+            fontSizeApply,
+          );
+        }
+        if (iframe.contentWindow.TextMetrics) {
+          definePropertyGet(
+            iframe.contentWindow.TextMetrics.prototype,
+            'width',
+            fontSizeApply,
           );
         }
       }
     }
   };
-  definePropertyGet(HTMLElement.prototype, 'offsetHeight', fontHeightApply);
-  definePropertyGet(HTMLElement.prototype, 'offsetWidth', fontWidthApply);
+  definePropertyGet(HTMLElement.prototype, 'offsetHeight', fontSizeApply);
+  definePropertyGet(HTMLElement.prototype, 'offsetWidth', fontSizeApply);
+  definePropertyGet(TextMetrics.prototype, 'width', fontSizeApply);
   if (document.readyState == 'interactive') fontIframes();
   else document.addEventListener('DOMContentLoaded', fontIframes);
 })();
